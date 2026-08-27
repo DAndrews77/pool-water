@@ -47,10 +47,15 @@ calculated here on purpose.
 
 ## Running it on an iPhone
 
-Host `index.html` anywhere over https, open it in Safari, then Share > Add to Home Screen. It
-launches full screen with its own icon, which the page draws on a canvas at load so there is no
-second file to host.
+Host `index.html` and `sw.js` together over https, open the page in Safari, then Share > Add to
+Home Screen. It launches full screen with its own icon, which the page draws on a canvas at load,
+so the icon itself needs no file.
 
-Opening the file from Files or iCloud Drive works too, but Safari treats `file://` as a throwaway
-origin, so saved tests may not persist. Host it if the history matters. If the browser refuses to
-store anything, the history table says so instead of silently dropping saves.
+`sw.js` is what makes it work with no signal. A standalone home screen app still requests its own
+document on launch, and offline that request fails; the service worker answers it from cache
+instead. Bump `CACHE` in `sw.js` whenever `index.html` changes.
+
+Opening the file straight from Files or iCloud Drive works for a quick look, but Safari treats
+`file://` as a throwaway origin: no service worker registers, and saved tests may not persist.
+Host it if the history matters. If the browser refuses to store anything, the history table says so
+instead of silently dropping saves.
