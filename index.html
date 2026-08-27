@@ -650,6 +650,15 @@ function refresh(writeInputs){
   } catch (e){}
 })();
 
+/* Offline support, but only when served over http or https. Opened straight
+   from Files as a file:// page there is no worker to register, and the page
+   still works — it just relies on the browser holding onto it. */
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+
 refresh(true);
 paintHistory();
 
