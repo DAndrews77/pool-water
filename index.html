@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pool Water">
+<meta name="theme-color" content="#0b6ea8">
+<title>Pool Water</title>
+<style>
+  :root{
+    --ink:#0d1216;
+    --ink-soft:#3d4a53;
+    --line:#c3ced6;
+    --bg:#f4f7f9;
+    --card:#ffffff;
+    --blue:#0b6ea8;
+    --good:#1a7f37;
+    --good-bg:#c9f0d4;
+    --bad:#b3261e;
+    --warn:#8a5300;
+    --warn-bg:#ffeec2;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font:500 17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 14px 60px}
+
+  header{
+    background:var(--blue);color:#fff;
+    padding:calc(14px + env(safe-area-inset-top)) 14px 14px;
+    margin:0 0 16px;
+  }
+  header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.4px}
+  header p{margin:4px 0 0;font-size:14px;opacity:.92;font-weight:600}
+
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);margin:26px 0 10px}
+
+  .card{
+    background:var(--card);border:2px solid var(--line);border-radius:14px;
+    padding:14px;margin:0 0 14px;
+  }
+  .name{font-size:22px;font-weight:800;margin:0}
+  .desc{margin:2px 0 12px;font-size:14px;color:var(--ink-soft);font-weight:600}
+
+  .row{display:flex;align-items:center;gap:12px}
+  .stepper{
+    flex:0 0 auto;width:62px;height:62px;border-radius:14px;
+    border:2px solid var(--blue);background:#fff;color:var(--blue);
+    font-size:32px;font-weight:800;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;user-select:none;-webkit-user-select:none;
+  }
+  .stepper:active{background:var(--blue);color:#fff}
+  .readout{flex:1 1 auto;text-align:center;min-width:0}
+  .readout input{
+    width:100%;border:none;background:transparent;text-align:center;
+    font:800 40px/1.1 inherit;color:var(--ink);padding:0;
+    -moz-appearance:textfield;
+  }
+  .readout input::-webkit-outer-spin-button,
+  .readout input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .readout .unit{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.6px}
+
+  .bar{margin-top:14px}
+  .track{position:relative;height:26px;background:#e6ecf0;border:2px solid var(--line);border-radius:8px}
+  .band{position:absolute;top:0;bottom:0;background:var(--good-bg)}
+  .mark{position:absolute;top:-5px;bottom:-5px;width:6px;margin-left:-3px;background:var(--bad);border-radius:3px}
+  .mark.ok{background:var(--good)}
+  .scale{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:8px}
+  .verdict{margin-top:6px;font-size:15px;font-weight:800}
+  .verdict.ok{color:var(--good)}
+  .verdict.off{color:var(--bad)}
+
+  .drops{margin-top:12px;padding-top:12px;border-top:2px dashed var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .drops label{font-size:14px;font-weight:700;color:var(--ink-soft);flex:1 1 100%}
+  .drops input{
+    width:104px;height:52px;font:800 24px/1 inherit;text-align:center;
+    border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  .drops button{
+    height:52px;padding:0 18px;border-radius:10px;border:2px solid var(--blue);
+    background:var(--blue);color:#fff;font:800 16px/1 inherit;cursor:pointer;
+  }
+
+  .seg{display:flex;gap:8px;margin-top:8px}
+  .seg button{
+    flex:1;min-height:58px;border-radius:12px;border:2px solid var(--line);
+    background:#fff;color:var(--ink);font:800 17px/1.2 inherit;cursor:pointer;padding:6px;
+  }
+  .seg button small{font-weight:600;font-size:12px;opacity:.75}
+  .seg button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+  .setlabel{font-size:15px;font-weight:800;margin-top:16px}
+  .setlabel.first{margin-top:0}
+
+  .bigbtn{
+    display:block;width:100%;min-height:64px;border-radius:14px;border:none;
+    background:var(--blue);color:#fff;font:800 19px/1.2 inherit;cursor:pointer;margin-top:6px;
+  }
+  .bigbtn.ghost{background:#fff;color:var(--blue);border:2px solid var(--blue)}
+
+  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0}
+  ol.steps li{
+    counter-increment:s;background:var(--card);border:2px solid var(--line);border-radius:14px;
+    padding:14px 14px 14px 58px;margin:0 0 12px;position:relative;
+  }
+  ol.steps li::before{
+    content:counter(s);position:absolute;left:12px;top:12px;
+    width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;
+  }
+  ol.steps li.warn{background:var(--warn-bg);border-color:#d9a441}
+  ol.steps li.warn::before{background:var(--warn)}
+  ol.steps li.stop{background:#ffdedb;border-color:#e0837c}
+  ol.steps li.stop::before{background:var(--bad)}
+  .t{font-size:19px;font-weight:800;margin:0}
+  .d{font-size:15px;font-weight:600;color:var(--ink-soft);margin:6px 0 0}
+  li.warn .d,li.stop .d{color:#33291c}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
+  .tablewrap{overflow-x:auto;border:2px solid var(--line);border-radius:12px;margin-top:14px}
+  th,td{padding:9px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th{background:#e9eff3;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  tr:last-child td{border-bottom:none}
+  td.del{text-align:center;padding:0}
+  td.del button{width:44px;height:44px;border:none;background:none;color:var(--bad);font-size:24px;font-weight:800;cursor:pointer}
+  .empty{padding:16px;text-align:center;color:var(--ink-soft);font-weight:700;background:#fff}
+  footer{margin-top:30px;font-size:13px;color:var(--ink-soft);font-weight:600;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Pool Water</h1>
+  <p>17,500 gallons &middot; saltwater &middot; spa with spillover</p>
+</header>
+
+<div class="wrap">
+
+  <h2>Your readings</h2>
+  <div id="cards"></div>
+
+  <h2>What you have on hand</h2>
+  <div class="card">
+    <div class="setlabel first">Acid strength</div>
+    <div class="seg" id="segAcid">
+      <button type="button" data-v="14.5">14.5 percent<br><small>weaker jug</small></button>
+      <button type="button" data-v="31.45">31.45 percent<br><small>stronger jug</small></button>
+    </div>
+
+    <div class="setlabel">Liquid chlorine strength</div>
+    <div class="seg" id="segChl">
+      <button type="button" data-v="10">10 percent</button>
+      <button type="button" data-v="12.5">12.5 percent</button>
+    </div>
+
+    <div class="setlabel">Fighting algae right now</div>
+    <div class="seg" id="segAlgae">
+      <button type="button" data-v="0">No</button>
+      <button type="button" data-v="1">Yes</button>
+    </div>
+  </div>
+
+  <h2>What to add, in order</h2>
+  <ol class="steps" id="steps"></ol>
+
+  <h2>Save this test</h2>
+  <button class="bigbtn" id="save" type="button">Save these readings</button>
+  <div class="tablewrap"><div id="history"></div></div>
+  <button class="bigbtn ghost" id="clear" type="button" style="margin-top:10px">Erase all saved tests</button>
+
+  <footer>
+    Works with no signal. Nothing leaves your phone &mdash; saved tests live in this browser only.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var GALLONS = 17500;
+
+/* ---------- small helpers ---------- */
+function roundTo(x, inc){ return Math.round(x / inc) * inc; }
+function clamp(x, lo, hi){ return Math.min(hi, Math.max(lo, x)); }
+
+/* 6.75 -> "6 3/4"   0.5 -> "1/2" */
+function pretty(x){
+  var sign = x < 0 ? "-" : "";
+  x = Math.abs(x);
+  var whole = Math.floor(x + 1e-9), frac = x - whole, fs = "";
+  if (Math.abs(frac - 0.25) < 0.02) fs = "1/4";
+  else if (Math.abs(frac - 0.5) < 0.02) fs = "1/2";
+  else if (Math.abs(frac - 0.75) < 0.02) fs = "3/4";
+  else if (frac > 0.02) return sign + x.toFixed(1);
+  if (whole === 0) return sign + (fs || "0");
+  return sign + whole + (fs ? " " + fs : "");
+}
+function plural(n, one, many){ return Math.abs(n - 1) < 0.001 ? one : many; }
+
+/* fluid ounces -> friendly cups, or gallons once it gets big */
+function liquid(flOz){
+  var cups = flOz / 8;
+  if (cups < 12){
+    var c = Math.max(0.25, roundTo(cups, 0.25));
+    return pretty(c) + " " + plural(c, "cup", "cups");
+  }
+  var gal = roundTo(flOz / 128, 0.25);
+  return pretty(gal) + " " + plural(gal, "gallon", "gallons") +
+         " (about " + pretty(roundTo(cups, 0.5)) + " cups)";
+}
+
+/* ---------- the six readings ---------- */
+var READINGS = [
+  { key:"chlorine", label:"Chlorine", unit:"parts per million",
+    desc:"The sanitizer. This is the one that actually keeps the water safe to swim in.",
+    min:0, max:20, step:0.5, dec:1, band:[4,8],
+    drops:0.5, dropText:"Taylor test kit: number of drops × 0.5" },
+
+  { key:"ph", label:"Acidity, called pH", unit:"pH",
+    desc:"How acidic or basic the water is. Too high and the chlorine gets lazy and scale forms. Too low and it starts eating your equipment.",
+    min:6.8, max:8.2, step:0.1, dec:1, band:[7.2,7.8] },
+
+  { key:"alkalinity", label:"Alkalinity", unit:"parts per million",
+    desc:"The cushion that keeps the pH from swinging around. Every dose of acid lowers this too.",
+    min:0, max:300, step:10, dec:0, band:[60,100],
+    drops:10, dropText:"Taylor test kit: number of drops × 10" },
+
+  { key:"calcium", label:"Calcium", unit:"parts per million",
+    desc:"How much calcium is dissolved in the water. Santa Clarita fill water is loaded with it, so this number only goes up. You manage it, you do not fix it.",
+    min:0, max:1500, step:50, dec:0, band:[200,600],
+    drops:10, dropText:"Taylor test kit: number of drops × 10" },
+
+  { key:"salt", label:"Salt", unit:"parts per million",
+    desc:"What the Jandy TruClear needs in the water in order to make chlorine at all.",
+    min:0, max:5000, step:100, dec:0, band:[3000,3500],
+    drops:200, dropText:"Taylor test kit: number of drops × 200" },
+
+  { key:"stabilizer", label:"Stabilizer", unit:"parts per million",
+    desc:"Sunscreen for the chlorine. Without it the sun burns your chlorine off in hours. With too much, the chlorine gets sluggish.",
+    min:0, max:150, step:5, dec:0, band:[40,70] }
+];
+
+var DEFAULTS = { chlorine:5, ph:7.6, alkalinity:80, calcium:600, salt:3200, stabilizer:50 };
+
+function load(key, fallback){
+  var out = JSON.parse(JSON.stringify(fallback));
+  try {
+    var raw = localStorage.getItem(key);
+    if (!raw) return out;
+    var o = JSON.parse(raw);
+    for (var k in out) if (typeof o[k] === "number") out[k] = o[k];
+  } catch (e){}
+  return out;
+}
+function store(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch (e){} }
+
+var state    = load("poolLastReadings", DEFAULTS);
+var settings = load("poolSettings", { acid:31.45, chlorine:12.5, algae:0 });
+
+/* the healthy chlorine band moves when you are fighting algae */
+function bandFor(r){
+  if (r.key === "chlorine" && settings.algae) return [10,14];
+  return r.band;
+}
+
+/* ---------- build the reading cards ---------- */
+var cardsEl = document.getElementById("cards");
+
+READINGS.forEach(function(r){
+  var card = document.createElement("div");
+  card.className = "card";
+
+  var html =
+    '<p class="name"></p>' +
+    '<p class="desc"></p>' +
+    '<div class="row">' +
+      '<div class="stepper" data-dir="-1">&minus;</div>' +
+      '<div class="readout">' +
+        '<input type="number" inputmode="decimal" step="' + r.step + '" aria-label="' + r.label + '">' +
+        '<div class="unit"></div>' +
+      '</div>' +
+      '<div class="stepper" data-dir="1">+</div>' +
+    '</div>' +
+    '<div class="bar">' +
+      '<div class="track"><div class="band"></div><div class="mark"></div></div>' +
+      '<div class="scale"><span>' + r.min + '</span><span class="bandtext"></span><span>' + r.max + '</span></div>' +
+      '<div class="verdict"></div>' +
+    '</div>';
+
+  if (r.drops){
+    html +=
+      '<div class="drops">' +
+        '<label></label>' +
+        '<input type="number" inputmode="numeric" placeholder="drops" aria-label="drop count">' +
+        '<button type="button">Convert</button>' +
+      '</div>';
+  }
+
+  card.innerHTML = html;
+  card.querySelector(".name").textContent = r.label;
+  card.querySelector(".desc").textContent = r.desc;
+  card.querySelector(".unit").textContent = r.unit;
+  if (r.drops) card.querySelector(".drops label").textContent = r.dropText;
+
+  cardsEl.appendChild(card);
+  r.el = card;
+
+  var numInput = card.querySelector(".readout input");
+
+  Array.prototype.forEach.call(card.querySelectorAll(".stepper"), function(btn){
+    btn.addEventListener("click", function(){
+      setValue(r, state[r.key] + r.step * Number(btn.getAttribute("data-dir")));
+    });
+  });
+
+  numInput.addEventListener("input", function(){
+    var v = parseFloat(numInput.value);
+    if (!isNaN(v)){ state[r.key] = clamp(v, r.min, r.max); refresh(false); }
+  });
+  numInput.addEventListener("blur", function(){ setValue(r, state[r.key]); });
+
+  if (r.drops){
+    var dropInput = card.querySelector(".drops input");
+    var convert = function(){
+      var d = parseFloat(dropInput.value);
+      if (!isNaN(d)) setValue(r, d * r.drops);
+    };
+    card.querySelector(".drops button").addEventListener("click", convert);
+    dropInput.addEventListener("change", convert);
+  }
+});
+
+function setValue(r, v){
+  v = clamp(roundTo(v, r.step), r.min, r.max);
+  state[r.key] = Number(v.toFixed(r.dec));
+  refresh(true);
+}
+
+/* ---------- settings ---------- */
+function wireSeg(id, key){
+  var box = document.getElementById(id);
+  Array.prototype.forEach.call(box.querySelectorAll("button"), function(btn){
+    btn.addEventListener("click", function(){
+      settings[key] = Number(btn.getAttribute("data-v"));
+      store("poolSettings", settings);
+      refresh(true);
+    });
+  });
+}
+wireSeg("segAcid", "acid");
+wireSeg("segChl", "chlorine");
+wireSeg("segAlgae", "algae");
+
+function paintSettings(){
+  [["segAcid","acid"],["segChl","chlorine"],["segAlgae","algae"]].forEach(function(pair){
+    Array.prototype.forEach.call(
+      document.getElementById(pair[0]).querySelectorAll("button"),
+      function(btn){
+        var on = Number(btn.getAttribute("data-v")) === settings[pair[1]];
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+  });
+}
+
+/* ---------- draw one reading ---------- */
+function paintReading(r, writeInput){
+  var v = state[r.key], band = bandFor(r), span = r.max - r.min;
+
+  var input = r.el.querySelector(".readout input");
+  if (writeInput || document.activeElement !== input) input.value = v.toFixed(r.dec);
+
+  var bandEl = r.el.querySelector(".band");
+  bandEl.style.left  = ((band[0] - r.min) / span * 100) + "%";
+  bandEl.style.width = ((band[1] - band[0]) / span * 100) + "%";
+
+  var inRange = v >= band[0] && v <= band[1];
+
+  var mark = r.el.querySelector(".mark");
+  mark.style.left = (clamp((v - r.min) / span, 0, 1) * 100) + "%";
+  mark.className = "mark" + (inRange ? " ok" : "");
+
+  r.el.querySelector(".bandtext").textContent = "good: " + band[0] + " to " + band[1];
+
+  var verdict = r.el.querySelector(".verdict");
+  verdict.className = "verdict " + (inRange ? "ok" : "off");
+  verdict.textContent = inRange
+    ? "In the good range"
+    : (v < band[0] ? "Low, below the good range" : "High, above the good range");
+}
+
+/* ---------- the advice ---------- */
+function buildSteps(){
+  var out = [];
+  var chlorine = state.chlorine, ph = state.ph, alk = state.alkalinity,
+      cal = state.calcium, salt = state.salt, stab = state.stabilizer;
+
+  var chlorineTarget = settings.algae ? 12 : 6.5;
+  var holdChlorine = false;
+
+  /* --- things that stop you before you pour anything --- */
+  if (chlorine > 8){
+    out.push({ tone:"stop", t:"Do not swim yet, and do not add any chlorine",
+      d:"Chlorine is at " + chlorine.toFixed(1) + ", which is above 8. There is nothing to fix here. " +
+        "Leave it alone and let the sun burn it down. Turn the salt chlorine maker down or off, keep " +
+        "the pump running, and test again tomorrow. Swim once it is back under 8." });
+    holdChlorine = true;
+  }
+
+  if (ph < 7.0){
+    out.push({ tone:"stop", t:"Stop adding acid. Run the waterfalls instead",
+      d:"The pH is " + ph.toFixed(1) + ", which is already too low. More acid from here starts chewing " +
+        "on the plaster and the equipment. Turn on the spa spillover and let the water splash for a few " +
+        "hours instead. Moving, splashing water pushes the pH back up on its own, for free. Test again tomorrow." });
+  }
+
+  /* --- muriatic acid --- */
+  if (ph > 7.6){
+    var ozStrong = 55 * (alk / 100) * ((ph - 7.3) / 0.6);
+    var haveStrong = settings.acid === 31.45;
+    var oz = haveStrong ? ozStrong : ozStrong * 2.17;
+    var cap = haveStrong ? 128 : 256;
+    var partial = oz > cap + 0.01;
+    if (partial) oz = cap;
+
+    out.push({ tone:"do",
+      t:"Add " + liquid(oz) + " of muriatic acid (" + (haveStrong ? "31.45" : "14.5") + " percent)",
+      d:"The pH is " + ph.toFixed(1) + " and you want it near 7.4. Pour it slowly into the deep end in " +
+        "front of a return jet with the pump running. Never into the skimmer, and never into the spa. " +
+        (partial
+          ? "This is a partial dose. The full amount is more than is safe to pour at once, so add this " +
+            "much today, run the pump overnight, retest tomorrow, and repeat until the pH comes down."
+          : "Wait about four hours, then retest before doing anything else.") });
+  }
+
+  /* --- liquid chlorine --- */
+  if (!holdChlorine && chlorine < chlorineTarget - 0.1){
+    var ppmPerGallon = settings.chlorine * (10000 / GALLONS);
+    var gallonsNeeded = (chlorineTarget - chlorine) / ppmPerGallon;
+
+    out.push({ tone:"do",
+      t:"Add " + liquid(gallonsNeeded * 128) + " of liquid chlorine (" + settings.chlorine + " percent)",
+      d:"Chlorine is at " + chlorine.toFixed(1) + " and you want it at " + chlorineTarget +
+        (settings.algae ? ", because you are fighting algae right now. " : ". ") +
+        "Pour it slowly in front of a return jet with the pump running. " +
+        (settings.algae
+          ? "While the algae fight is on: brush the whole pool, run the pump around the clock, and " +
+            "retest and re-dose every single day until the water is clear and the chlorine stops " +
+            "falling overnight."
+          : "Best done in the evening, so the sun does not burn half of it off before it gets to work.") });
+  }
+
+  /* --- pool salt --- */
+  if (salt < 3000){
+    var bags = roundTo(((3200 - salt) / 275), 0.25);
+    out.push({ tone:"do",
+      t:"Add " + pretty(bags) + " " + plural(bags, "bag", "bags") + " of pool salt (about " +
+        Math.round(bags * 40) + " pounds)",
+      d:"Salt is at " + salt + " and the TruClear wants about 3,200 to make chlorine properly. Pour it " +
+        "into the shallow end with the pump running and brush it around until it dissolves. Leave the " +
+        "salt chlorine maker off for about a day, then retest. Salt readings take a day to even out." });
+  }
+
+  /* --- stabilizer --- */
+  if (stab < 45){
+    var lbs = roundTo((55 - stab) / 7, 0.25);
+    out.push({ tone:"do",
+      t:"Add " + pretty(lbs) + " " + plural(lbs, "pound", "pounds") + " of stabilizer",
+      d:"Stabilizer is at " + stab + " and you want it near 55, so the sun stops eating your chlorine. " +
+        "Put it in a sock in the skimmer rather than dumping it in. It dissolves slowly and can stain " +
+        "the plaster if it sits on the bottom. It can take a week to show up on a test, so do not " +
+        "re-dose just because the number has not moved yet." });
+  } else if (stab > 70){
+    out.push({ tone:"warn", t:"Stabilizer is high at " + stab,
+      d:"Above 70, the stabilizer starts holding the chlorine back, so the same reading does less work. " +
+        "No chemical removes it. The only fix is draining some water and refilling. Do not add any more " +
+        "stabilizer, and stay away from chlorine tablets, which are loaded with it." });
+  }
+
+  /* --- calcium: a permanent condition, managed monthly --- */
+  if (cal > 600){
+    out.push({ tone:"warn", t:"Monthly reminder: add 28 ounces of Clorox Scale, Metal and Stain Control",
+      d:"Calcium is at " + cal + ". With Santa Clarita fill water that is normal, and it is not going " +
+        "down on its own. You keep it dissolved instead of removing it. Once a month, pour in 28 ounces " +
+        "with the pump running. This is what keeps the calcium from turning into white crust on the tile, " +
+        "the spillover, and the salt cell." });
+  }
+
+  /* --- alkalinity: flagged, not dosed --- */
+  if (alk < 60){
+    out.push({ tone:"warn", t:"Heads up: alkalinity is low at " + alk,
+      d:"Below 60, the pH gets bouncy and hard to hold steady, and every dose of acid drives it lower " +
+        "still. Baking soda is what raises it, but this app does not calculate that dose. Look it up or " +
+        "ask the pool store before adding any." });
+  }
+
+  if (!out.length){
+    out.push({ tone:"do", t:"Nothing to add today",
+      d:"Every reading is where you want it. Run the pump, brush the walls if you feel like it, and " +
+        "go enjoy the pool." });
+  }
+
+  /* --- the two rules that always apply --- */
+  out.push({ tone:"do", t:"Have the pump running for every single one of these",
+    d:"Everything above assumes the water is circulating. Chemicals poured into a still pool sit in one " +
+      "spot at full strength and can bleach or etch the plaster underneath. Leave the pump on for at " +
+      "least four hours after the last thing you add." });
+
+  out.push({ tone:"stop", t:"Never mix acid and chlorine. Wait 30 minutes between them",
+    d:"Acid and chlorine together make chlorine gas, which is genuinely dangerous. Add one, let the pump " +
+      "circulate for a full 30 minutes, then add the other. Never pour them into the same spot, and " +
+      "never pre-mix anything in a bucket." });
+
+  return out;
+}
+
+function paintSteps(){
+  var list = document.getElementById("steps");
+  list.innerHTML = "";
+  buildSteps().forEach(function(s){
+    var li = document.createElement("li");
+    li.className = (s.tone === "do") ? "" : s.tone;
+    li.innerHTML = '<p class="t"></p><p class="d"></p>';
+    li.querySelector(".t").textContent = s.t;
+    li.querySelector(".d").textContent = s.d;
+    list.appendChild(li);
+  });
+}
+
+/* ---------- history ----------
+   Kept in memory as well as in storage, so that a browser which refuses to
+   let the page save anything still shows this session's tests instead of
+   quietly swallowing them. */
+var storageOK = (function(){
+  try { localStorage.setItem("poolProbe", "1"); localStorage.removeItem("poolProbe"); return true; }
+  catch (e){ return false; }
+})();
+
+var tests = (function(){
+  if (!storageOK) return [];
+  try {
+    var h = JSON.parse(localStorage.getItem("poolHistory"));
+    return Object.prototype.toString.call(h) === "[object Array]" ? h : [];
+  } catch (e){ return []; }
+})();
+
+function saveTests(){
+  if (!storageOK) return;
+  try { localStorage.setItem("poolHistory", JSON.stringify(tests)); } catch (e){}
+}
+
+function paintHistory(){
+  var box = document.getElementById("history"), h = tests;
+
+  var warn = storageOK ? "" :
+    '<div class="empty" style="color:#b3261e">This browser will not let the page save anything, ' +
+    'so these tests disappear when you close it.</div>';
+
+  if (!h.length){ box.innerHTML = warn + '<div class="empty">No saved tests yet.</div>'; return; }
+
+  var head = "<tr><th>Date</th><th>Chlorine</th><th>pH</th><th>Alkalinity</th>" +
+             "<th>Calcium</th><th>Salt</th><th>Stabilizer</th><th></th></tr>";
+
+  var rows = h.map(function(e, i){
+    var d = new Date(e.at);
+    var when = (d.getMonth() + 1) + "/" + d.getDate() + "/" + String(d.getFullYear()).slice(2);
+    return "<tr><td>" + when +
+      "</td><td>" + Number(e.chlorine).toFixed(1) +
+      "</td><td>" + Number(e.ph).toFixed(1) +
+      "</td><td>" + e.alkalinity +
+      "</td><td>" + e.calcium +
+      "</td><td>" + e.salt +
+      "</td><td>" + e.stabilizer +
+      '</td><td class="del"><button type="button" data-i="' + i + '" aria-label="Delete this test">&times;</button></td></tr>';
+  }).join("");
+
+  box.innerHTML = warn + "<table>" + head + rows + "</table>";
+
+  Array.prototype.forEach.call(box.querySelectorAll("button[data-i]"), function(btn){
+    btn.addEventListener("click", function(){
+      tests.splice(Number(btn.getAttribute("data-i")), 1);
+      saveTests();
+      paintHistory();
+    });
+  });
+}
+
+document.getElementById("save").addEventListener("click", function(){
+  var entry = { at: Date.now() };
+  READINGS.forEach(function(r){ entry[r.key] = state[r.key]; });
+  entry.algae = settings.algae;
+
+  tests.unshift(entry);
+  if (tests.length > 200) tests.length = 200;
+  saveTests();
+  paintHistory();
+
+  var b = this, old = b.textContent;
+  b.textContent = "Saved ✓";
+  setTimeout(function(){ b.textContent = old; }, 1400);
+});
+
+document.getElementById("clear").addEventListener("click", function(){
+  if (confirm("Erase every saved test? This cannot be undone.")){
+    tests.length = 0;
+    saveTests();
+    paintHistory();
+  }
+});
+
+/* ---------- redraw ---------- */
+function refresh(writeInputs){
+  READINGS.forEach(function(r){ paintReading(r, writeInputs); });
+  paintSettings();
+  paintSteps();
+  store("poolLastReadings", state);
+}
+
+/* home screen icon, drawn on the fly so there is no second file to host */
+(function makeIcon(){
+  try {
+    var c = document.createElement("canvas");
+    c.width = c.height = 180;
+    var x = c.getContext("2d");
+    x.fillStyle = "#0b6ea8"; x.fillRect(0, 0, 180, 180);
+    x.fillStyle = "#ffffff";
+    x.beginPath(); x.arc(90, 114, 46, 0, Math.PI * 2); x.fill();
+    x.beginPath(); x.moveTo(90, 32); x.lineTo(133, 106); x.lineTo(47, 106); x.closePath(); x.fill();
+    var l = document.createElement("link");
+    l.rel = "apple-touch-icon";
+    l.href = c.toDataURL("image/png");
+    document.head.appendChild(l);
+  } catch (e){}
+})();
+
+refresh(true);
+paintHistory();
+
+})();
+</script>
+</body>
+</html>
