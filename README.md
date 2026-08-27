@@ -18,6 +18,19 @@ pounds. Every label is written in plain English: "chlorine," not FC; "alkalinity
 - Each reading shows a bar with the good range shaded and a marker for where the water actually is.
 - Tests are saved to `localStorage` and listed in a history table.
 
+## Test instructions
+
+Every reading card has a collapsed "How to test this" panel with the full procedure: which tube,
+what to fill it to, which numbered reagent bottle, what color change to watch for, and what to
+count.
+
+These are written for the **Taylor K-2006**, plus the **K-1766** for salt. That kit is inferred from
+the drop factors, which match it exactly: chlorine at 0.5 per drop is a 10 millilitre sample on the
+powder titration, alkalinity and calcium at 10 per drop are 25 millilitre samples, salt at 200 per
+drop is the separate silver nitrate titration, and stabilizer has no drop factor because it is the
+cloudy-tube turbidity test. If the kit on hand is a different model, the sample volumes and the R
+numbers in `READINGS[].test` are what need changing.
+
 ## Settings
 
 - Acid strength on hand: 14.5% or 31.45%

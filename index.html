@@ -98,6 +98,29 @@
     background:var(--blue);color:#fff;font:800 16px/1 inherit;cursor:pointer;
   }
 
+  /* Collapsed by default, so a card stays scannable when you already know the test. */
+  .how{margin-top:12px;padding-top:12px;border-top:2px dashed var(--line)}
+  .how summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    min-height:54px;padding:0 14px;
+    border:2px solid var(--blue);border-radius:12px;
+    background:#fff;color:var(--blue);font-size:16px;font-weight:800;
+  }
+  .how summary::-webkit-details-marker{display:none}
+  .how summary::after{content:"+";font-size:28px;font-weight:800;line-height:1}
+  .how[open] summary{background:var(--blue);color:#fff;border-radius:12px 12px 0 0}
+  .how[open] summary::after{content:"\2212"}
+  .how .sample{margin:12px 0 0;font-size:14px;font-weight:800}
+  ol.howsteps{margin:10px 0 0;padding-left:26px;font-size:15px;line-height:1.6;font-weight:600;color:var(--ink-soft)}
+  ol.howsteps li{margin-bottom:10px}
+  ol.howsteps li::marker{color:var(--blue);font-weight:800}
+  .hownote{
+    margin:12px 0 0;padding:10px 12px;border-radius:10px;
+    font-size:14px;line-height:1.6;font-weight:700;
+    color:#33291c;background:var(--warn-bg);
+  }
+
   .seg{display:flex;gap:8px;margin-top:8px}
   .seg button{
     flex:1;min-height:58px;border-radius:12px;border:2px solid var(--line);
@@ -227,34 +250,101 @@ function liquid(flOz){
 }
 
 /* ---------- the six readings ---------- */
+/* The test procedures below are the Taylor K-2006 ones, plus the K-1766 salt kit.
+   The R numbers are the labels printed on the reagent bottles. */
 var READINGS = [
   { key:"chlorine", label:"Chlorine", unit:"parts per million",
     desc:"The sanitizer. This is the one that actually keeps the water safe to swim in.",
     min:0, max:20, step:0.5, dec:1, band:[4,8],
-    drops:0.5, dropText:"Taylor test kit: number of drops × 0.5" },
+    drops:0.5, dropText:"Taylor test kit: number of drops × 0.5",
+    test:{
+      sample:"Big tube, filled to the 10 milliliter line",
+      steps:[
+        "Collect the water elbow deep, away from the returns and away from the spillover. Surface water reads wrong.",
+        "Rinse the big tube with pool water, then fill it to the 10 milliliter line.",
+        "Add one level scoop of the white powder from bottle R-0870, using the small white dipper. Swirl until it dissolves. The water turns pink if there is any chlorine at all.",
+        "Add bottle R-0871 one drop at a time. Swirl after every single drop, and count them out loud.",
+        "Stop the instant the pink disappears and the water goes clear. That is the endpoint.",
+        "Type the number of drops into the drops box on this card and it does the math for you."
+      ],
+      note:"If the water never turns pink, chlorine is zero. If you pass about 25 drops, the chlorine is very high, so dump it and start over with half the sample topped up with distilled water, then double your answer."
+    } },
 
   { key:"ph", label:"Acidity, called pH", unit:"pH",
     desc:"How acidic or basic the water is. Too high and the chlorine gets lazy and scale forms. Too low and it starts eating your equipment.",
-    min:6.8, max:8.2, step:0.1, dec:1, band:[7.2,7.8] },
+    min:6.8, max:8.2, step:0.1, dec:1, band:[7.2,7.8],
+    test:{
+      sample:"Comparator tube, filled to the 44 milliliter line",
+      steps:[
+        "Rinse the comparator tube, then fill it to the 44 milliliter line.",
+        "Add 5 drops from bottle R-0004. Cap it and turn it over a few times to mix.",
+        "Hold it up against something white, in the shade. Never match colors in direct sun, and never wearing sunglasses.",
+        "Pick the color block it matches, then set that number at the top of this card."
+      ],
+      note:"There are no drops to count on this one. If chlorine is above about 10, it bleaches the red color out and you get a falsely low reading, so test the pH before you add chlorine, or add one drop of R-0007 to the sample first."
+    } },
 
   { key:"alkalinity", label:"Alkalinity", unit:"parts per million",
     desc:"The cushion that keeps the pH from swinging around. Every dose of acid lowers this too.",
     min:0, max:300, step:10, dec:0, band:[60,100],
-    drops:10, dropText:"Taylor test kit: number of drops × 10" },
+    drops:10, dropText:"Taylor test kit: number of drops × 10",
+    test:{
+      sample:"Big tube, filled to the 25 milliliter line",
+      steps:[
+        "Rinse the big tube, then fill it to the 25 milliliter line.",
+        "Add 2 drops of R-0007 and swirl. This kills the chlorine so it cannot bleach the colors.",
+        "Add 5 drops of R-0008 and swirl. The water turns green.",
+        "Add R-0009 one drop at a time, swirling and counting after each one, until the green turns red.",
+        "Type the number of drops into the drops box on this card."
+      ],
+      note:"Count only the R-0009 drops. The R-0007 and R-0008 drops are not part of the number."
+    } },
 
   { key:"calcium", label:"Calcium", unit:"parts per million",
     desc:"How much calcium is dissolved in the water. Santa Clarita fill water is loaded with it, so this number only goes up. You manage it, you do not fix it.",
     min:0, max:1500, step:50, dec:0, band:[200,600],
-    drops:10, dropText:"Taylor test kit: number of drops × 10" },
+    drops:10, dropText:"Taylor test kit: number of drops × 10",
+    test:{
+      sample:"Big tube, filled to the 25 milliliter line",
+      steps:[
+        "Rinse the big tube, then fill it to the 25 milliliter line.",
+        "Add 20 drops of R-0010 and swirl.",
+        "Add 5 drops of R-0011L and swirl. The water turns red.",
+        "Add R-0012 one drop at a time, swirling and counting, until the red turns blue with no red or purple left in it.",
+        "Type the number of drops into the drops box on this card."
+      ],
+      note:"Go slow near the end. The last couple of drops change the color slowly, and if you rush past it you will read high. Count only the R-0012 drops."
+    } },
 
   { key:"salt", label:"Salt", unit:"parts per million",
     desc:"What the Jandy TruClear needs in the water in order to make chlorine at all.",
     min:0, max:5000, step:100, dec:0, band:[3000,3500],
-    drops:200, dropText:"Taylor test kit: number of drops × 200" },
+    drops:200, dropText:"Taylor test kit: number of drops × 200",
+    test:{
+      sample:"Small tube, filled to the 10 milliliter line",
+      steps:[
+        "Rinse the small tube, then fill it to the 10 milliliter line.",
+        "Add 5 drops of R-0630 and swirl. The water turns yellow.",
+        "Add R-0718 one drop at a time, swirling and counting, until the yellow turns brick red and stays that way.",
+        "Type the number of drops into the drops box on this card."
+      ],
+      note:"This is the separate salt kit, not the main box. The color goes through a muddy orange on the way, so keep going until it settles on a solid brick red that does not swirl back to yellow."
+    } },
 
   { key:"stabilizer", label:"Stabilizer", unit:"parts per million",
     desc:"Sunscreen for the chlorine. Without it the sun burns your chlorine off in hours. With too much, the chlorine gets sluggish.",
-    min:0, max:150, step:5, dec:0, band:[40,70] }
+    min:0, max:150, step:5, dec:0, band:[40,70],
+    test:{
+      sample:"Mixing bottle plus the black dot tube",
+      steps:[
+        "Fill the small mixing bottle to the 7 milliliter line with pool water.",
+        "Top it up to the 14 milliliter line with R-0013. Cap it and shake it for 30 seconds.",
+        "Let it sit for 30 seconds. It turns cloudy.",
+        "Look straight down into the black dot tube from the top, and pour the cloudy water in slowly.",
+        "Stop the second the black dot vanishes. Read the number printed on the tube at the water line, then set that number at the top of this card."
+      ],
+      note:"There are no drops to count. Do this outside in daylight, not in the shade and not at night, or you will read it wrong. If the dot never disappears even with the tube full, the stabilizer is under 30."
+    } }
 ];
 
 var DEFAULTS = { chlorine:5, ph:7.6, alkalinity:80, calcium:600, salt:3200, stabilizer:50 };
@@ -313,11 +403,32 @@ READINGS.forEach(function(r){
       '</div>';
   }
 
+  if (r.test){
+    html +=
+      '<details class="how">' +
+        '<summary>How to test this</summary>' +
+        '<p class="sample"></p>' +
+        '<ol class="howsteps"></ol>' +
+        '<p class="hownote"></p>' +
+      '</details>';
+  }
+
   card.innerHTML = html;
   card.querySelector(".name").textContent = r.label;
   card.querySelector(".desc").textContent = r.desc;
   card.querySelector(".unit").textContent = r.unit;
   if (r.drops) card.querySelector(".drops label").textContent = r.dropText;
+
+  if (r.test){
+    card.querySelector(".sample").textContent = "Sample: " + r.test.sample;
+    var ol = card.querySelector(".howsteps");
+    r.test.steps.forEach(function(s){
+      var li = document.createElement("li");
+      li.textContent = s;
+      ol.appendChild(li);
+    });
+    card.querySelector(".hownote").textContent = r.test.note;
+  }
 
   cardsEl.appendChild(card);
   r.el = card;
